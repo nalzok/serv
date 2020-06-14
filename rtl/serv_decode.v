@@ -36,7 +36,6 @@ module serv_decode
    //To RF
    output reg [4:0]  o_rf_rd_addr,
    output reg [4:0]  o_rf_rs1_addr,
-   output reg [4:0]  o_rf_rs2_addr,
    //To mem IF
    output wire 	     o_mem_signed,
    output wire 	     o_mem_word,
@@ -52,6 +51,7 @@ module serv_decode
    output wire 	     o_csr_d_sel,
    output wire 	     o_csr_imm_en,
    //To top
+   output wire 	     o_rs2_en,
    output wire [3:0] o_immdec_ctrl,
    output wire 	     o_op_b_source,
    output wire 	     o_rd_csr_en,
@@ -174,6 +174,10 @@ module serv_decode
    assign o_immdec_ctrl[2] = opcode[4] & !opcode[0];
    assign o_immdec_ctrl[3] = opcode[4];
 
+   //True for R, S, B type instructions
+   //False for U, I, J
+   assign o_rs2_en = (opcode[3:0] == 4'b1000) | (!opcode[4] & opcode[3] & !opcode[0]);
+
    assign o_alu_rd_sel[0] = (funct3 == 3'b000); // Add/sub
    assign o_alu_rd_sel[1] = (funct3[1:0] == 2'b01); //Shift
    assign o_alu_rd_sel[2] = (funct3[2:1] == 2'b01); //SLT*
@@ -182,7 +186,6 @@ module serv_decode
       if (i_wb_en) begin
          o_rf_rd_addr  <= i_wb_rdt[11:7];
          o_rf_rs1_addr <= i_wb_rdt[19:15];
-         o_rf_rs2_addr <= i_wb_rdt[24:20];
          funct3        <= i_wb_rdt[14:12];
          imm30         <= i_wb_rdt[30];
          opcode        <= i_wb_rdt[6:2];

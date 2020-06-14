@@ -2,8 +2,10 @@
 module serv_immdec
   (
    input wire 	     i_clk,
-   //Input   
+   //Input
    input wire 	     i_cnt_en,
+   input wire 	     i_rs2_en,
+   output wire [4:0] o_rs2_addr,
    input wire 	     i_csr_imm_en,
    output wire 	     o_csr_imm,
    input wire [31:2] i_wb_rdt,
@@ -24,6 +26,8 @@ module serv_immdec
    assign o_imm = i_cnt_done ? signbit : i_ctrl[0] ? imm11_7[0] : imm24_20[0];
    assign o_csr_imm = imm19_12_20[4];
 
+   assign o_rs2_addr = imm24_20;
+
    always @(posedge i_clk) begin
       if (i_wb_en) begin
 	 signbit     <= i_wb_rdt[31] & !i_csr_imm_en;
@@ -37,8 +41,10 @@ module serv_immdec
 	 imm19_12_20 <= {i_ctrl[3] ? signbit : imm24_20[0], imm19_12_20[8:1]};
 	 imm7        <= signbit;
 	 imm30_25    <= {i_ctrl[2] ? imm7 : i_ctrl[1] ? signbit : imm19_12_20[0], imm30_25[5:1]};
-	 imm24_20    <= {imm30_25[0], imm24_20[4:1]};
 	 imm11_7     <= {imm30_25[0], imm11_7[4:1]};
+	 if (!i_rs2_en)
+	   imm24_20    <= {imm30_25[0], imm24_20[4:1]};
       end
-   end   
+   end
+
 endmodule
