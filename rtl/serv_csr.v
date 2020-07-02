@@ -55,7 +55,7 @@ module serv_csr
 		   (i_csr_source == CSR_SOURCE_CSR) ? csr_out :
 		   1'bx;
 
-   assign csr_out = (i_mstatus_en & i_en & mstatus) |
+   assign csr_out = (i_mstatus_en & i_en & (mstatus | (i_cnt7 & mstatus_mpie))) |
 		    i_rf_csr_out |
 		    (i_mcause_en & i_en & mcause);
 
@@ -79,6 +79,9 @@ module serv_csr
        */
       if (i_mstatus_en & i_cnt3)
 	mstatus_mie <= csr_in;
+
+      if (i_mstatus_en & i_cnt7)
+	mstatus_mpie <= csr_in;
 
       if (i_mie_en & i_cnt7)
 	mie_mtie <= csr_in;
